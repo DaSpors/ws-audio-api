@@ -47,7 +47,7 @@
 			this.parentSocket = socket;
 			this.encoder = new OpusEncoder(this.config.codec.sampleRate, this.config.codec.channels, this.config.codec.app, this.config.codec.frameDuration);
 			var _this = this;
-			this._makeStream = function(onError) {
+			this._makeStream = function(onStarted, onError) {
 				navigator.getUserMedia({ audio: true }, function(stream) {
 					_this.stream = stream;
 					_this.audioInput = audioContext.createMediaStreamSource(stream);
@@ -63,12 +63,13 @@
 					_this.audioInput.connect(_this.gainNode);
 					_this.gainNode.connect(_this.recorder);
 					_this.recorder.connect(audioContext.destination);
+					if( onStarted ) onStarted();
 				}, onError || _this.onError);
 			}
 		}
 	};
 
-	WSAudioAPI.Streamer.prototype.start = function(onError) {
+	WSAudioAPI.Streamer.prototype.start = function(onError, onStarted) {
 		var _this = this;
 
 		if (!this.parentSocket) {
@@ -80,14 +81,14 @@
 		this.socket.binaryType = 'arraybuffer';
 
 		if (this.socket.readyState == WebSocket.OPEN) {
-			this._makeStream(onError);
+			this._makeStream(onStarted,onError);
 		} else if (this.socket.readyState == WebSocket.CONNECTING) {
 			var _onopen = this.socket.onopen;
 			this.socket.onopen = function() {
 				if (_onopen) {
 					_onopen();
 				}
-				_this._makeStream(onError);
+				_this._makeStream(onStarted,onError);
 			}
 		} else {
 			console.error('Socket is in CLOSED state');
