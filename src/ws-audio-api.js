@@ -63,7 +63,7 @@
 					_this.audioInput.connect(_this.gainNode);
 					_this.gainNode.connect(_this.recorder);
 					_this.recorder.connect(audioContext.destination);
-					if( onStarted ) onStarted();
+					if( onStarted ) onStarted(stream);
 				}, onError || _this.onError);
 			}
 		}
